@@ -1,0 +1,22 @@
+name: Sync Upstream
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # 每5分钟同步一次
+  workflow_dispatch:        # 支持手动触发
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 拉取完整历史记录
+      - name: 添加上游仓库
+        run: |
+          git remote add upstream https://github.com/SteamDatabase/SteamTracking
+      - name: 合并上游更新
+        run: |
+          git fetch upstream
+          git checkout master  # 假设分支是main
+          git merge upstream/master --no-edit
+          git push origin master
