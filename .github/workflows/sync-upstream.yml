@@ -16,7 +16,9 @@ jobs:
           git remote add upstream https://github.com/SteamDatabase/SteamTracking
       - name: 合并上游更新
         run: |
+          git config --global user.email "jimersylee+github@gmail.com"
+          git config --global user.name "Jimmy Lee"
           git fetch upstream
-          git checkout master  # 假设分支是main
+          git checkout master 
           git merge upstream/master --no-edit
           git push origin master
