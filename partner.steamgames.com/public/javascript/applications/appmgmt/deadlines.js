@@ -542,14 +542,15 @@
           l = (0, n.useCallback)(async () => {
             if ((i(""), !t.deadline?.data?.partnerid))
               return void i("An error occurred.  Missing partner id");
-            const e = `${p.TS.PARTNER_BASE_URL}pub/ajaxstarttaxidentityworkflow/${t.deadline.data.partnerid}`,
-              a = new FormData();
-            a.append("sessionid", p.TS.SESSIONID), o(!0);
+            const e = t.onboarded ? "pub" : "newpartner",
+              a = `${p.TS.PARTNER_BASE_URL}${e}/ajaxstarttaxidentityworkflow/${t.deadline.data.partnerid}`,
+              n = new FormData();
+            n.append("sessionid", p.TS.SESSIONID), o(!0);
             try {
-              const t = await y().post(e, a, { withCredentials: !0 });
-              200 == t?.status && 1 == t.data?.success && t.data.url
-                ? window.open(t.data.url, "_blank")
-                : i("An error occurred. " + (0, v.H)(t)?.strErrorMsg);
+              const e = await y().post(a, n, { withCredentials: !0 });
+              200 == e?.status && 1 == e.data?.success && e.data.url
+                ? window.open(e.data.url, "_blank")
+                : i("An error occurred. " + (0, v.H)(e)?.strErrorMsg);
             } catch (e) {
               i("An error occurred. " + (0, v.H)(e)?.strErrorMsg);
             }
@@ -2223,18 +2224,31 @@
           })(),
           [y, v] = n.useMemo(() => {
             const e = [...t];
-            return (
-              e.sort((e, t) => {
-                const a = new Date(
-                    JSON.parse(e.data.description_jsondata)?.CreatedOn,
-                  ),
-                  n = new Date(
-                    JSON.parse(t.data.description_jsondata)?.CreatedOn,
-                  );
-                return a.getTime() > n.getTime() ? -1 : 1;
-              }),
-              [e, Boolean(1 == e[0]?.data.status && !D(e[0]))]
-            );
+            e.sort((e, t) => {
+              const a = new Date(
+                  JSON.parse(e.data.description_jsondata)?.CreatedOn,
+                ),
+                n = new Date(
+                  JSON.parse(t.data.description_jsondata)?.CreatedOn,
+                );
+              return a.getTime() > n.getTime() ? -1 : 1;
+            });
+            const a =
+              e.length > 0 &&
+              Boolean(
+                e.find(
+                  (e) =>
+                    0 == e.data.status ||
+                    (function (e) {
+                      const t = JSON.parse(e.data.description_jsondata);
+                      return (
+                        "F1099MISC-ConsentYes" == t.TemplateName ||
+                        "F1042-Consent" == t.TemplateName
+                      );
+                    })(e),
+                ),
+              );
+            return [e, a];
           }, [t]),
           E =
             ("dev" == p.TS.WEB_UNIVERSE || "beta" == p.TS.WEB_UNIVERSE
@@ -2261,7 +2275,7 @@
                   "Steamworks Document Communication",
                   n.createElement("div", { className: s().PartnerName }, a),
                 ),
-                v &&
+                !v &&
                   n.createElement(
                     "div",
                     { className: s().TaskCompleted },
@@ -2271,10 +2285,10 @@
                   n.Fragment,
                   null,
                   h && n.createElement(q, { strTemplate: f }),
-                  !v &&
+                  v &&
                     y.length > 0 &&
                     y.map((e, t) =>
-                      n.createElement(M, {
+                      n.createElement(D, {
                         key: "update_" + t,
                         requirement: {
                           deadline: e,
@@ -2387,7 +2401,7 @@
               ),
             ),
             n.createElement("br", null),
-            n.createElement(M, {
+            n.createElement(D, {
               requirement: {
                 deadline: c,
                 index: 0,
@@ -2399,13 +2413,6 @@
         );
       }
       function D(e) {
-        const t = JSON.parse(e.data.description_jsondata);
-        return (
-          "F1099MISC-ConsentYes" == t.TemplateName ||
-          "F1042-Consent" == t.TemplateName
-        );
-      }
-      function M(e) {
         const { requirement: t } = e,
           a = JSON.parse(t.deadline.data.description_jsondata),
           [, i] = P(),
